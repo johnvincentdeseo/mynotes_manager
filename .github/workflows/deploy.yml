@@ -3,7 +3,7 @@ name: Deploy Laravel to InfinityFree
 on:
   push:
     branches:
-      - main  # Runs every time you push to your main branch
+      - main  
 
 jobs:
   laravel-deploy:

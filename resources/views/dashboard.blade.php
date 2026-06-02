@@ -98,7 +98,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // 1. NOTES CREATED OVER TIME LINE CHART CONFIG
+        
         const ctxTimeline = document.getElementById('dashboardTimelineChart').getContext('2d');
         new Chart(ctxTimeline, {
             type: 'line',
@@ -107,7 +107,7 @@
                 datasets: [{
                     label: 'Notes Created',
                     data: {!! json_encode($counts) !!},
-                    borderColor: '#E67E5A', // Orange system brand color
+                    borderColor: '#E67E5A', 
                     backgroundColor: 'rgba(230, 126, 90, 0.06)',
                     borderWidth: 3,
                     tension: 0.3,
@@ -136,7 +136,7 @@
             }
         });
 
-        // 2. USERS VS NOTES DOUGHNUT CHART CONFIG
+  
         const ctxCompare = document.getElementById('dashboardComparisonChart').getContext('2d');
         new Chart(ctxCompare, {
             type: 'doughnut',
@@ -144,7 +144,7 @@
                 labels: ['Total Users', 'Total Notes'],
                 datasets: [{
                     data: [{{ $totalUsers }}, {{ $totalNotes }}],
-                    backgroundColor: ['#2D509E', '#E67E5A'], // Corporate Blue & Deep Accent Orange
+                    backgroundColor: ['#2D509E', '#E67E5A'], 
                     borderWidth: 4,
                     borderColor: '#ffffff',
                     hoverOffset: 4
@@ -164,7 +164,7 @@
                         }
                     }
                 },
-                cutout: '72%' // Modern thin inner-cut configuration design style
+                cutout: '72%' 
             }
         });
     });

@@ -44,3 +44,7 @@ Route::middleware('auth')->group(function () {
     // 5. Session Termination
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::resource('users', UserController::class);
+});

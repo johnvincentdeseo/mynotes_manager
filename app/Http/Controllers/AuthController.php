@@ -10,8 +10,6 @@ use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
-    // --- Login & Registration Methods ---
-
     public function showLogin()
     {
         return view('auth.login');
@@ -26,6 +24,14 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+            
+            $user = Auth::user();
+            
+            // FIXED: Redirect admin to the correct user management route
+            if ($user->role && strtolower($user->role) === 'admin') {
+                return redirect()->route('users.index');
+            }
+
             return redirect()->intended('dashboard');
         }
 
@@ -45,13 +51,21 @@ class AuthController extends Controller
             'password' => 'required|string|min:6|confirmed',
         ]);
 
+        // Default role is set to 'user' when registering publicly
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => 'user', 
         ]);
 
         Auth::login($user);
+        
+        // FIXED: Using named route here as well for consistency
+        if (strtolower($user->role) === 'admin') {
+            return redirect()->route('users.index');
+        }
+
         return redirect()->route('dashboard');
     }
 
@@ -62,8 +76,6 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         return redirect()->route('login');
     }
-
-    // --- Profile Methods ---
 
     public function profile()
     {

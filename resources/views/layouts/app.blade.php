@@ -15,7 +15,7 @@
             font-family: 'Inter', sans-serif; 
             background-color: #f8f9fa;
         }
-        /* Custom layout structures mimicking your dark menu grid look */
+        
         .sidebar-wrapper {
             width: 260px;
             min-height: 100vh;
@@ -25,7 +25,7 @@
         .sidebar-heading-small {
             font-size: 10px;
             font-weight: 700;
-            text-uppercase: uppercase;
+            text-transform: uppercase; /* Fixed typo from text-uppercase: uppercase */
             letter-spacing: 0.1em;
             color: #64748B;
         }
@@ -84,9 +84,13 @@
             </a>
             
             <div class="sidebar-heading-small text-uppercase mb-2 mt-4">Management</div>
-            <a href="{{ route('users.index') }}" class="custom-nav-link {{ request()->routeIs('users.index') ? 'active-tab' : '' }}">
-                <span>User Management</span>
-            </a>
+            
+            @if(auth()->check() && strtolower(auth()->user()->role) === 'admin')
+                <a href="{{ route('users.index') }}" class="custom-nav-link {{ request()->routeIs('users.index') ? 'active-tab' : '' }}">
+                    <span>User Management</span>
+                </a>
+            @endif
+            
             <a href="{{ route('notes.index') }}" class="custom-nav-link {{ request()->routeIs('notes.*') || request()->routeIs('notes.index') ? 'active-tab' : '' }}">
                 <span>Notes</span>
             </a>
@@ -115,7 +119,7 @@
         </div>
     </aside>
 
-    <main class="flex-grow-1 p-4 overflow-y-auto" style="height: 100vh;">   
+    <main class="flex-grow-1 p-4 overflow-y-auto" style="height: 100vh;">   
         @yield('content')
     </main>
 

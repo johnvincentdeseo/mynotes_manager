@@ -14,7 +14,7 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // 1. Calculate Metric Statistics Cards
+        
         $totalUsers = User::count();
         $totalNotes = Note::count();
         $myNotesCount = $user ? $user->notes()->count() : 0;
@@ -23,7 +23,7 @@ class DashboardController extends Controller
                               ->whereYear('created_at', Carbon::now()->year)
                               ->count();
 
-        // 2. Aggregate Data for "Notes Created Over Time" (Last 7 Days)
+        
         $chartData = Note::where('created_at', '>=', Carbon::now()->subDays(6)->startOfDay())
             ->selectRaw('DATE(created_at) as date, count(*) as count')
             ->groupBy('date')
@@ -31,7 +31,7 @@ class DashboardController extends Controller
             ->pluck('count', 'date')
             ->toArray();
 
-        // Build the fixed 7-day array bounds
+        
         $labels = [];
         $counts = [];
         for ($i = 6; $i >= 0; $i--) {
@@ -40,7 +40,7 @@ class DashboardController extends Controller
             $counts[] = $chartData[$dateString] ?? 0;
         }
 
-        // Return the dashboard view with ALL required variables attached
+        
         return view('dashboard', compact(
             'totalUsers', 
             'totalNotes', 

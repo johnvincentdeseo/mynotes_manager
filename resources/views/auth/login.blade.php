@@ -17,13 +17,13 @@
         .brand-font { 
             font-family: 'Playfair Display', serif; 
         }
-        /* Match your custom rounded curve layouts [2.5rem] */
+        
         .custom-card {
             border-radius: 2.5rem !important;
             max-width: 480px;
             width: 100%;
         }
-        /* Custom smooth transition styling mimicking your Tailwind focus rings */
+        
         .form-control-custom {
             padding: 0.85rem 1rem;
             border: 1px solid #dee2e6;
@@ -45,7 +45,7 @@
             transition: all 0.3s ease-in-out;
         }
         .btn-custom:hover {
-            background-color: #1e3a8a !important; /* Tailwind blue-900 equivalent */
+            background-color: #1e3a8a !important; 
             color: #ffffff;
         }
     </style>
@@ -59,35 +59,61 @@
                 <h1 class="brand-font display-4 fw-bold mb-2" style="color: #2D509E;">
                     Note<span style="color: #E67E5A;">Man</span>
                 </h1>
-                <p class="text-muted fs-6 mb-0">Welcome back — sign in to continue</p>
+                
+                @auth
+                    <p class="text-muted fs-6 mb-0">You are already logged in as <strong>{{ Auth::user()->name }}</strong></p>
+                @else
+                    <p class="text-muted fs-6 mb-0">Welcome back — sign in to continue</p>
+                @endauth
             </div>
 
-            <form action="{{ route('login') }}" method="POST">
-                @csrf
-                
-                <div class="mb-4">
-                    <label class="form-label text-secondary small fw-bold mb-2">Email Address</label>
-                    <input type="email" name="email" value="{{ old('email') }}" placeholder="Enter Email" required
-                        class="form-control form-control-custom @error('email') is-invalid @enderror">
-                    @error('email') 
-                        <div class="invalid-feedback mt-1">{{ $message }}</div> 
-                    @enderror
+            @auth
+                <div class="text-center">
+                    @if(strtolower(Auth::user()->role) === 'admin')
+                        <a href="{{ url('/admin/users') }}" class="btn btn-custom w-100 text-white fw-bold fs-5 border-0 shadow type-button mb-3">
+                            Go to Admin Dashboard
+                        </a>
+                    @else
+                        <a href="{{ url('/home') }}" class="btn btn-custom w-100 text-white fw-bold fs-5 border-0 shadow type-button mb-3">
+                            Go to My Notes
+                        </a>
+                    @endif
+                    
+                    <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-link text-secondary small text-decoration-none fw-semibold">
+                            Sign out of this account
+                        </button>
+                    </form>
                 </div>
+            @else
+                <form action="{{ route('login') }}" method="POST">
+                    @csrf
+                    
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-bold mb-2">Email Address</label>
+                        <input type="email" name="email" value="{{ old('email') }}" placeholder="Enter Email" required
+                            class="form-control form-control-custom @error('email') is-invalid @enderror">
+                        @error('email') 
+                            <div class="invalid-feedback mt-1">{{ $message }}</div> 
+                        @enderror
+                    </div>
 
-                <div class="mb-4">
-                    <label class="form-label text-secondary small fw-bold mb-2">Password</label>
-                    <input type="password" name="password" placeholder="Enter Password" required
-                        class="form-control form-control-custom">
-                </div>
+                    <div class="mb-4">
+                        <label class="form-label text-secondary small fw-bold mb-2">Password</label>
+                        <input type="password" name="password" placeholder="Enter Password" required
+                            class="form-control form-control-custom">
+                    </div>
 
-                <button type="submit" class="btn btn-custom w-100 text-white fw-bold fs-5 border-0 shadow mt-2">
-                    Log In
-                </button>
-            </form>
+                    <button type="submit" class="btn btn-custom w-100 text-white fw-bold fs-5 border-0 shadow mt-2">
+                        Log In
+                    </button>
+                </form>
 
-            <p class="text-center text-muted mt-5 mb-0">
-                Don't have an account? <a href="{{ route('register') }}" class="fw-bold text-decoration-none" style="color: #2D509E;">Register</a>
-            </p>
+                <p class="text-center text-muted mt-5 mb-0">
+                    Don't have an account? <a href="{{ route('register') }}" class="fw-bold text-decoration-none" style="color: #2D509E;">Register</a>
+                </p>
+            @endauth
             
         </div>
     </div>

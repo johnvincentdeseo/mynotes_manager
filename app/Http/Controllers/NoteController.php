@@ -14,8 +14,7 @@ class NoteController extends Controller
         $user = Auth::user();
         $notes = $user->notes()->latest()->get();
 
-        // ---- CHART DATA AGGREGATION ----
-        // Get note creation counts grouped by date for the last 7 days
+        
         $chartData = $user->notes()
             ->where('created_at', '>=', Carbon::now()->subDays(6)->startOfDay())
             ->selectRaw('DATE(created_at) as date, count(*) as count')
@@ -24,7 +23,7 @@ class NoteController extends Controller
             ->pluck('count', 'date')
             ->toArray();
 
-        // Fill in missing days with 0 counts so chart lines don't break
+        
         $labels = [];
         $counts = [];
         for ($i = 6; $i >= 0; $i--) {
@@ -55,7 +54,7 @@ class NoteController extends Controller
 
     public function update(Request $request, Note $note)
     {
-        // Security check: ensure user owns the note
+        
         if ($note->user_id !== Auth::id()) {
             abort(403);
         }

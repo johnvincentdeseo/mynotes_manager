@@ -45,6 +45,7 @@
                     <tr class="text-uppercase tracking-wider text-muted headers-style" style="font-size: 11px; font-weight: 700;">
                         <th class="p-4 bg-transparent text-secondary">Name</th>
                         <th class="p-4 bg-transparent text-secondary">Email Address</th>
+                        <th class="p-4 bg-transparent text-secondary">Role</th>
                         <th class="p-4 bg-transparent text-secondary">Created Date</th>
                         <th class="p-4 bg-transparent text-secondary text-end">Actions</th>
                     </tr>
@@ -61,15 +62,22 @@
                             </div>
                         </td>
                         <td class="p-4 text-muted small text-lowercase">{{ $user->email }}</td>
+                        <td class="p-4">
+                            @if(strtolower($user->role) === 'admin')
+                                <span class="badge bg-danger bg-opacity-10 text-danger rounded-2 px-2.5 py-1.5 fw-semibold text-xs text-uppercase tracking-wider">Admin</span>
+                            @else
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-2 px-2.5 py-1.5 fw-semibold text-xs text-uppercase tracking-wider">User</span>
+                            @endif
+                        </td>
                         <td class="p-4 text-secondary small">{{ $user->created_at->format('M d, Y') }}</td>
                         <td class="p-4 text-end gap-2">
-                            <button onclick="openEditModal({{ $user->id }}, '{{ addslashes($user->name) }}', '{{ addslashes($user->email) }}')" class="btn btn-link text-decoration-none text-primary p-0 fw-bold text-uppercase tracking-wider mx-2">Edit</button>
+                            <button onclick="openEditModal({{ $user->id }}, '{{ addslashes($user->name) }}', '{{ addslashes($user->email) }}', '{{ $user->role }}')" class="btn btn-link text-decoration-none text-primary p-0 fw-bold text-uppercase tracking-wider mx-2">Edit</button>
                             <button onclick="openDeleteModal({{ $user->id }}, '{{ addslashes($user->name) }}')" class="btn btn-link text-decoration-none text-danger p-0 fw-bold text-uppercase tracking-wider">Delete</button>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="p-5 text-center text-muted small">No registered users found.</td>
+                        <td colspan="5" class="p-5 text-center text-muted small">No registered users found.</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -94,6 +102,13 @@
                     <div class="mb-3">
                         <label class="form-label text-uppercase text-secondary fw-bold mb-2" style="font-size: 11px;">Email</label>
                         <input type="email" name="email" required class="form-control bg-light border-0 py-2.5 rounded-3 text-sm shadow-none">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-uppercase text-secondary fw-bold mb-2" style="font-size: 11px;">Role</label>
+                        <select name="role" required class="form-select bg-light border-0 py-2.5 rounded-3 text-sm shadow-none">
+                            <option value="user" selected>User</option>
+                            <option value="admin">Admin</option>
+                        </select>
                     </div>
                     <div class="mb-4">
                         <label class="form-label text-uppercase text-secondary fw-bold mb-2" style="font-size: 11px;">Password</label>
@@ -126,6 +141,13 @@
                     <div class="mb-3">
                         <label class="form-label text-uppercase text-secondary fw-bold mb-2" style="font-size: 11px;">Email</label>
                         <input type="email" id="edit_email" name="email" required class="form-control bg-light border-0 py-2.5 rounded-3 text-sm shadow-none">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-uppercase text-secondary fw-bold mb-2" style="font-size: 11px;">Role</label>
+                        <select id="edit_role" name="role" required class="form-select bg-light border-0 py-2.5 rounded-3 text-sm shadow-none">
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                        </select>
                     </div>
                     <div class="mb-4">
                         <label class="form-label text-uppercase text-secondary fw-bold mb-2" style="font-size: 11px;">Password <span class="text-muted fw-normal text-none" style="text-transform: none;">(Leave blank to keep current)</span></label>
@@ -165,6 +187,7 @@
     .tracking-wider { letter-spacing: 0.05em !important; }
     .btn-link { font-size: 0.75rem; letter-spacing: 0.05em; }
     .table > :not(caption) > * > * { border-bottom-width: 1px; border-color: #f1f5f9; }
+    .badge { font-size: 0.7rem; }
 </style>
 
 <script>
@@ -180,10 +203,11 @@
         bsAddModal.show();
     }
 
-    function openEditModal(id, name, email) {
+    function openEditModal(id, name, email, role) {
         document.getElementById('editForm').action = `/users/${id}`;
         document.getElementById('edit_name').value = name;
         document.getElementById('edit_email').value = email;
+        document.getElementById('edit_role').value = role.toLowerCase();
         bsEditModal.show();
     }
 

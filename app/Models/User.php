@@ -12,14 +12,11 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = [
+  protected $fillable = [
     'name',
     'email',
     'password',
-    'phone',
-    'gender',
-    'address',
-    'profile_image', 
+    'role',
 ];
 
     protected $hidden = [
@@ -27,9 +24,7 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    /**
-     * Relationship to fix image_92a77d.png
-     */
+    
     public function notes(): HasMany
     {
         return $this->hasMany(Note::class);

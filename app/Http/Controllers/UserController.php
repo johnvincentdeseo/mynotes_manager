@@ -20,13 +20,14 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
+            'role' => 'required|string|in:user,admin', // Validates incoming role selector
         ]);
 
         User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'role' => 'user',
+            'role' => $data['role'], // Saves the chosen role from modal
         ]);
 
         return redirect()->route('users.index')->with('toast_success', 'User added successfully!');
@@ -38,10 +39,12 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:6',
+            'role' => 'required|string|in:user,admin', // Validates role change updates
         ]);
 
         $user->name = $data['name'];
         $user->email = $data['email'];
+        $user->role = $data['role']; // <--- THIS LINE WAS MISSING. This saves it to the DB!
 
         if (!empty($data['password'])) {
             $user->password = Hash::make($data['password']);
@@ -54,7 +57,6 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        // Prevent deleting yourself
         if (auth()->id() === $user->id) {
             return redirect()->route('users.index')->with('toast_error', 'You cannot delete your own account!');
         }
