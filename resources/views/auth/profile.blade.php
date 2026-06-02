@@ -44,8 +44,10 @@
                     <div class="position-relative">
                         @if($user->profile_picture)
                             <img src="{{ asset('storage/' . $user->profile_picture) }}" 
+                                 onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($user->name) }}&background=15325B&color=fff';"
                                  class="rounded-circle object-fit-cover border border-light shadow-sm" 
-                                 style="width: 110px; height: 110px; min-width: 110px; min-height: 110px;">
+                                 style="width: 110px; height: 110px; min-width: 110px; min-height: 110px;"
+                                 alt="Profile Picture">
                         @else
                             <div class="rounded-circle border border-light shadow-sm text-white fw-bold d-flex align-items-center justify-content-center" 
                                  style="width: 110px; height: 110px; min-width: 110px; min-height: 110px; font-size: 2.8rem; background-color: #15325B;">
