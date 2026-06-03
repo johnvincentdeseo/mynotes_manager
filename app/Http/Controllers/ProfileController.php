@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
 class ProfileController extends Controller
@@ -24,21 +25,27 @@ class ProfileController extends Controller
 
         // 2. Handle Profile Picture
         if ($request->hasFile('profile_picture')) {
+            // Burahin ang lumang picture kung mayroon
             if ($user->profile_picture) {
                 Storage::disk('public')->delete($user->profile_picture);
             }
+            
+            // I-store sa 'avatars' folder sa loob ng public disk
             $path = $request->file('profile_picture')->store('avatars', 'public');
             $validated['profile_picture'] = $path;
         }
 
-        // 3. Update User
-        $user->update($validated);
-
-        // 4. (Optional) Handle Password update kung may inilagay ang user
+        // 3. Handle Password (hiwalay para safe)
         if ($request->filled('password')) {
-            $user->password = bcrypt($request->password);
-            $user->save();
+            $request->validate(['password' => 'confirmed|min:8']);
+            $validated['password'] = Hash::make($request->password);
+        } else {
+            // Tanggalin ang password sa $validated array para hindi ma-update ng null
+            unset($validated['password']);
         }
+
+        // 4. Update User
+        $user->update($validated);
 
         return redirect()->back()->with('toast_success', 'Profile identity updated successfully.');
     }
