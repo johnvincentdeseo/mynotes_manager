@@ -22,19 +22,16 @@ class ProfileController extends Controller
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // 2. Handle Profile Picture (Direkta sa root public folder)
+        // 2. Handle Profile Picture (Base64 Encryption - Walang Folders!)
         if ($request->hasFile('profile_picture')) {
-            if ($user->profile_picture && file_exists(public_path($user->profile_picture))) {
-                @unlink(public_path($user->profile_picture));
-            }
-            
             $file = $request->file('profile_picture');
-            $filename = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
             
-            // I-move sa isang normal na folder sa public directory
-            $file->move(public_path('avatars'), $filename);
+            // Babasahin ng PHP ang mismong file at gagawin itong Text Code
+            $fileData = file_get_contents($file->getRealPath());
+            $base64 = 'data:image/' . $file->getClientOriginalExtension() . ';base64,' . base64_encode($fileData);
             
-            $validated['profile_picture'] = 'avatars/' . $filename;
+            // Ang mase-save sa database ay ang mahabang text representation ng image
+            $validated['profile_picture'] = $base64;
         }
 
         // 3. Handle Password
