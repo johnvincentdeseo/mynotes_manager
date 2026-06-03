@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 
 class ProfileController extends Controller
@@ -22,25 +23,22 @@ class ProfileController extends Controller
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // 2. Handle Profile Picture (Direkta sa totoong Public Folder)
+        // 2. Handle Profile Picture (Ligtas para sa Railway Production)
         if ($request->hasFile('profile_picture')) {
-            // Burahin ang lumang picture sa public/avatars folder kung mayroon
-            if ($user->profile_picture && file_exists(public_path($user->profile_picture))) {
-                unlink(public_path($user->profile_picture));
+            // Burahin ang lumang picture kung mayroon gamit ang Storage facade
+            if ($user->profile_picture) {
+                Storage::disk('public')->delete($user->profile_picture);
             }
             
-            // Gumawa ng kakaibang pangalan para sa file
-            $file = $request->file('profile_picture');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            // I-store ang file gamit ang default storage engine sa 'avatars' folder
+            // Gagamitin nito ang relative storage system na mas preferred ng web servers
+            $path = $request->file('profile_picture')->store('avatars', 'public');
             
-            // I-move nang direkta sa public/avatars folder ng iyong app
-            $file->move(public_path('avatars'), $filename);
-            
-            // I-save ang relative path sa database ('avatars/filename.jpg')
-            $validated['profile_picture'] = 'avatars/' . $filename;
+            // Ito ang ise-save sa db: "avatars/filename.jpg"
+            $validated['profile_picture'] = $path;
         }
 
-        // 3. Handle Password (hiwalay para safe)
+        // 3. Handle Password
         if ($request->filled('password')) {
             $request->validate(['password' => 'confirmed|min:8']);
             $validated['password'] = Hash::make($request->password);
