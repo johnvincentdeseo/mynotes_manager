@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 
 class ProfileController extends Controller
@@ -22,27 +21,25 @@ class ProfileController extends Controller
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        if ($request->hasFile('profile_picture')) {
-            if ($user->profile_picture) {
-                $oldPath = str_replace('/storage/', '', $user->profile_picture);
-                Storage::disk('public')->delete($oldPath);
-            }
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+        $user->phone = $validated['phone'] ?? null;
+        $user->gender = $validated['gender'] ?? null;
+        $user->address = $validated['address'] ?? null;
 
+        if ($request->hasFile('profile_picture')) {
             $file = $request->file('profile_picture');
-            $filename = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('avatars', $filename, 'public');
-            
-            $validated['profile_picture'] = Storage::url($path);
+            $fileData = file_get_contents($file->getRealPath());
+            $base64 = 'data:image/' . $file->getClientOriginalExtension() . ';base64,' . base64_encode($fileData);
+            $user->profile_picture = $base64;
         }
 
         if ($request->filled('password')) {
             $request->validate(['password' => 'confirmed|min:8']);
-            $validated['password'] = Hash::make($request->password);
-        } else {
-            unset($validated['password']);
+            $user->password = Hash::make($request->password);
         }
 
-        $user->update($validated);
+        $user->save();
 
         return redirect()->back()->with('toast_success', 'Profile identity updated successfully.');
     }
