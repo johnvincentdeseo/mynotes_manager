@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 
 class ProfileController extends Controller
@@ -23,19 +22,19 @@ class ProfileController extends Controller
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // 2. Handle Profile Picture (Ligtas para sa Railway Production)
+        // 2. Handle Profile Picture (Direkta sa root public folder)
         if ($request->hasFile('profile_picture')) {
-            // Burahin ang lumang picture kung mayroon gamit ang Storage facade
-            if ($user->profile_picture) {
-                Storage::disk('public')->delete($user->profile_picture);
+            if ($user->profile_picture && file_exists(public_path($user->profile_picture))) {
+                @unlink(public_path($user->profile_picture));
             }
             
-            // I-store ang file gamit ang default storage engine sa 'avatars' folder
-            // Gagamitin nito ang relative storage system na mas preferred ng web servers
-            $path = $request->file('profile_picture')->store('avatars', 'public');
+            $file = $request->file('profile_picture');
+            $filename = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
             
-            // Ito ang ise-save sa db: "avatars/filename.jpg"
-            $validated['profile_picture'] = $path;
+            // I-move sa isang normal na folder sa public directory
+            $file->move(public_path('avatars'), $filename);
+            
+            $validated['profile_picture'] = 'avatars/' . $filename;
         }
 
         // 3. Handle Password
