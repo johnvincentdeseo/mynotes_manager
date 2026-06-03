@@ -12,7 +12,6 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
-        // 1. Validation
         $validated = $request->validate([
             'name'            => 'required|string|max:255',
             'email'           => 'required|string|email|max:255|unique:users,email,' . $user->id,
@@ -22,25 +21,13 @@ class ProfileController extends Controller
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // 2. Handle Profile Picture (Ligtas para sa Railway Web Server Container)
         if ($request->hasFile('profile_picture')) {
-            // Burahin ang lumang picture sa server kung nage-exist
-            if ($user->profile_picture && file_exists(public_path($user->profile_picture))) {
-                @unlink(public_path($user->profile_picture));
-            }
-            
             $file = $request->file('profile_picture');
-            // Gumawa ng malinis na unique filename gamit ang timestamp at user id
-            $filename = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
-            
-            // I-move nang direkta sa loob ng default public system path ng app mo
-            $file->move(public_path('uploads'), $filename);
-            
-            // I-save ang relative layout path sa database (Tiyak na kasya sa VARCHAR 255)
-            $validated['profile_picture'] = 'uploads/' . $filename;
+            $fileData = file_get_contents($file->getRealPath());
+            $base64 = 'data:image/' . $file->getClientOriginalExtension() . ';base64,' . base64_encode($fileData);
+            $validated['profile_picture'] = $base64;
         }
 
-        // 3. Handle Password
         if ($request->filled('password')) {
             $request->validate(['password' => 'confirmed|min:8']);
             $validated['password'] = Hash::make($request->password);
@@ -48,7 +35,6 @@ class ProfileController extends Controller
             unset($validated['password']);
         }
 
-        // 4. Update User Profile
         $user->update($validated);
 
         return redirect()->back()->with('toast_success', 'Profile identity updated successfully.');
