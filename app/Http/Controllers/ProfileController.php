@@ -3,7 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\SupportStyle;
+use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 
 class ProfileController extends Controller
@@ -12,37 +13,29 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
-        // 1. Validation
+        
         $validated = $request->validate([
             'name'            => 'required|string|max:255',
             'email'           => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'phone'           => 'nullable|string|max:20',
-            'gender'          => 'nullable|string',
-            'address'         => 'nullable|string',
-            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB limit
         ]);
 
-        // 2. Handle Profile Picture (Base64 Encryption - Walang Folders!)
+        
         if ($request->hasFile('profile_picture')) {
-            $file = $request->file('profile_picture');
             
-            // Babasahin ng PHP ang mismong file at gagawin itong Text Code
-            $fileData = file_get_contents($file->getRealPath());
-            $base64 = 'data:image/' . $file->getClientOriginalExtension() . ';base64,' . base64_encode($fileData);
             
-            // Ang mase-save sa database ay ang mahabang text representation ng image
-            $validated['profile_picture'] = $base64;
+            if ($user->profile_picture) {
+                Storage::disk('public')->delete($user->profile_picture);
+            }
+
+            
+            $path = $request->file('profile_picture')->store('avatars', 'public');
+
+            
+            $validated['profile_picture'] = $path;
         }
 
-        // 3. Handle Password
-        if ($request->filled('password')) {
-            $request->validate(['password' => 'confirmed|min:8']);
-            $validated['password'] = Hash::make($request->password);
-        } else {
-            unset($validated['password']);
-        }
-
-        // 4. Update User
+        
         $user->update($validated);
 
         return redirect()->back()->with('toast_success', 'Profile identity updated successfully.');
