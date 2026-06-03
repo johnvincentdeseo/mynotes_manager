@@ -1,23 +1,17 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            // Baguhin ang type ng column para kayanin ang Base64 image strings
-            $table->longText('profile_picture')->nullable()->change();
-        });
+        DB::statement('ALTER TABLE users MODIFY profile_picture LONGTEXT NULL');
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('profile_picture', 255)->nullable()->change();
-        });
+        DB::statement('ALTER TABLE users MODIFY profile_picture VARCHAR(255) NULL');
     }
 };
