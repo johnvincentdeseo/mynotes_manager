@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\SupportStyle;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
 class ProfileController extends Controller
@@ -13,26 +12,40 @@ class ProfileController extends Controller
     {
         $user = auth()->user();
 
-        
+        // 1. Validation
         $validated = $request->validate([
             'name'            => 'required|string|max:255',
             'email'           => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB limit
+            'phone'           => 'nullable|string|max:20',
+            'gender'          => 'nullable|string',
+            'address'         => 'nullable|string',
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
         
         if ($request->hasFile('profile_picture')) {
-            
-            
-            if ($user->profile_picture) {
-                Storage::disk('public')->delete($user->profile_picture);
+            // Burahin ang lumang picture kung nage-exist sa path
+            if ($user->profile_picture && file_exists(public_path($user->profile_picture))) {
+                @unlink(public_path($user->profile_picture));
             }
-
             
-            $path = $request->file('profile_picture')->store('avatars', 'public');
-
+            $file = $request->file('profile_picture');
+           
+            $filename = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
             
-            $validated['profile_picture'] = $path;
+            
+            $file->move(public_path('uploads'), $filename);
+            
+           
+            $validated['profile_picture'] = 'uploads/' . $filename;
+        }
+
+        
+        if ($request->filled('password')) {
+            $request->validate(['password' => 'confirmed|min:8']);
+            $validated['password'] = Hash::make($request->password);
+        } else {
+            unset($validated['password']);
         }
 
         
