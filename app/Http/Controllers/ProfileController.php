@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 
 class ProfileController extends Controller
@@ -22,10 +23,16 @@ class ProfileController extends Controller
         ]);
 
         if ($request->hasFile('profile_picture')) {
+            if ($user->profile_picture) {
+                $oldPath = str_replace('/storage/', '', $user->profile_picture);
+                Storage::disk('public')->delete($oldPath);
+            }
+
             $file = $request->file('profile_picture');
-            $fileData = file_get_contents($file->getRealPath());
-            $base64 = 'data:image/' . $file->getClientOriginalExtension() . ';base64,' . base64_encode($fileData);
-            $validated['profile_picture'] = $base64;
+            $filename = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('avatars', $filename, 'public');
+            
+            $validated['profile_picture'] = Storage::url($path);
         }
 
         if ($request->filled('password')) {
