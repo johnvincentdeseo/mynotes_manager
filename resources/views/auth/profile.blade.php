@@ -42,8 +42,8 @@
 
                 <div class="d-flex flex-column flex-sm-row align-items-center gap-4 border-bottom pb-4 mb-4">
                  <div class="position-relative">
-    @if($user->profile_picture)
-        <img src="{{ $user->profile_picture }}" 
+    @if($user->profile_picture && !Str::contains($user->profile_picture, 'base64'))
+        <img src="{{ asset($user->profile_picture) }}" 
              alt="User Avatar" 
              class="rounded-circle object-fit-cover border border-light shadow-sm" 
              style="width: 110px; height: 110px; min-width: 110px; min-height: 110px;">
