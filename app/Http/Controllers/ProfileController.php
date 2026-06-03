@@ -22,25 +22,18 @@ class ProfileController extends Controller
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        
+        // 2. Pure Native Local Upload (Base64 Encoding sa Database)
         if ($request->hasFile('profile_picture')) {
-            // Burahin ang lumang picture kung nage-exist sa path
-            if ($user->profile_picture && file_exists(public_path($user->profile_picture))) {
-                @unlink(public_path($user->profile_picture));
-            }
-            
             $file = $request->file('profile_picture');
-           
-            $filename = time() . '_' . $user->id . '.' . $file->getClientOriginalExtension();
             
+            // Konvertihin ang file para maging text string code
+            $fileData = file_get_contents($file->getRealPath());
+            $base64 = 'data:image/' . $file->getClientOriginalExtension() . ';base64,' . base64_encode($fileData);
             
-            $file->move(public_path('uploads'), $filename);
-            
-           
-            $validated['profile_picture'] = 'uploads/' . $filename;
+            $validated['profile_picture'] = $base64;
         }
 
-        
+        // 3. Handle Password
         if ($request->filled('password')) {
             $request->validate(['password' => 'confirmed|min:8']);
             $validated['password'] = Hash::make($request->password);
@@ -48,7 +41,7 @@ class ProfileController extends Controller
             unset($validated['password']);
         }
 
-        
+        // 4. Update User Data
         $user->update($validated);
 
         return redirect()->back()->with('toast_success', 'Profile identity updated successfully.');
