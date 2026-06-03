@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
@@ -23,16 +22,22 @@ class ProfileController extends Controller
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // 2. Handle Profile Picture
+        // 2. Handle Profile Picture (Direkta sa totoong Public Folder)
         if ($request->hasFile('profile_picture')) {
-            // Burahin ang lumang picture kung mayroon
-            if ($user->profile_picture) {
-                Storage::disk('public')->delete($user->profile_picture);
+            // Burahin ang lumang picture sa public/avatars folder kung mayroon
+            if ($user->profile_picture && file_exists(public_path($user->profile_picture))) {
+                unlink(public_path($user->profile_picture));
             }
             
-            // I-store sa 'avatars' folder sa loob ng public disk
-            $path = $request->file('profile_picture')->store('avatars', 'public');
-            $validated['profile_picture'] = $path;
+            // Gumawa ng kakaibang pangalan para sa file
+            $file = $request->file('profile_picture');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            
+            // I-move nang direkta sa public/avatars folder ng iyong app
+            $file->move(public_path('avatars'), $filename);
+            
+            // I-save ang relative path sa database ('avatars/filename.jpg')
+            $validated['profile_picture'] = 'avatars/' . $filename;
         }
 
         // 3. Handle Password (hiwalay para safe)
@@ -40,7 +45,6 @@ class ProfileController extends Controller
             $request->validate(['password' => 'confirmed|min:8']);
             $validated['password'] = Hash::make($request->password);
         } else {
-            // Tanggalin ang password sa $validated array para hindi ma-update ng null
             unset($validated['password']);
         }
 
