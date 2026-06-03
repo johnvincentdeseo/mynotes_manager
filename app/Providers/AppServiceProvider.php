@@ -20,8 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // I-force ang HTTPS kung ang app ay nasa live production server (Railway)
-        if (config('app.env') === 'production' || env('RAILWAY_ENVIRONMENT')) {
+        // I-force lang ang HTTPS kung nasa Railway production talaga
+        if (env('RAILWAY_ENVIRONMENT')) {
             URL::forceScheme('https');
         }
     }
