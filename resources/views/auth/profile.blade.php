@@ -41,19 +41,18 @@
                 @method('PUT')
 
                 <div class="d-flex flex-column flex-sm-row align-items-center gap-4 border-bottom pb-4 mb-4">
-              <div class="position-relative">
-    @if($user->profile_picture && (Str::startsWith($user->profile_picture, 'data:image/') || Str::contains($user->profile_picture, ';base64,')) && !Str::contains($user->profile_picture, 'uploads/') && !Str::contains($user->profile_picture, 'storage/'))
-        <img src="{{ $user->profile_picture }}" 
-             alt="Profile Avatar" 
-             class="rounded-circle object-fit-cover border border-light shadow-sm" 
-             style="width: 110px; height: 110px; min-width: 110px; min-height: 110px;">
-    @else
-        <div class="rounded-circle border border-light shadow-sm text-white fw-bold d-flex align-items-center justify-content-center" 
-             style="width: 110px; height: 110px; min-width: 110px; min-height: 110px; font-size: 2.8rem; background-color: #15325B;">
-            {{ substr($user->name, 0, 1) }}
-        </div>
-    @endif
-</div>
+                    <div class="position-relative">
+                        @if($user->profile_picture)
+                            <img src="{{ asset('storage/' . $user->profile_picture) }}" 
+                                 class="rounded-circle object-fit-cover border border-light shadow-sm" 
+                                 style="width: 110px; height: 110px; min-width: 110px; min-height: 110px;">
+                        @else
+                            <div class="rounded-circle border border-light shadow-sm text-white fw-bold d-flex align-items-center justify-content-center" 
+                                 style="width: 110px; height: 110px; min-width: 110px; min-height: 110px; font-size: 2.8rem; background-color: #15325B;">
+                                {{ substr($user->name, 0, 1) }}
+                            </div>
+                        @endif
+                    </div>
                     
                     <div class="w-100 text-center text-sm-start">
                         <h5 class="fw-bold text-dark mb-1">Profile Picture</h5>
